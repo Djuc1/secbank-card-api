@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id            Int    @id @default(autoincrement())
+  accountNumber String @unique
+  firstName     String
+  lastName      String
+  email         String @unique
+  phoneNumber   String
+  accountStatus String @default("ACTIVE")
+
+  cardRequests CardRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model CardRequest {
+  id             Int     @id @default(autoincrement())
+  reference      String  @unique
+  idempotencyKey String? @unique
+  customerId     Int
+  cardType       String
+  deliveryBranch String
+  status         String  @default("PENDING")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@map("card_requests")
+}
